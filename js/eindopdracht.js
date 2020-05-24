@@ -1,4 +1,5 @@
 var scene, camera, renderer, mesh;
+var meshFloor;
 
 var keyboard = {};
 var player = { height: 1.8 };
@@ -8,14 +9,22 @@ function init() {
     camera = new THREE.PerspectiveCamera(90, window.innerWidth / window.innerHeight, 0.1, 1000);
 
     mesh = new THREE.Mesh(
-        new THREE.BoxGeometry(1, 1, 1),
-        new THREE.MeshBasicMaterial({ color: 0xffffff, wireframe: true })
+        new THREE.SphereGeometry(1, 20, 20),
+        new THREE.MeshBasicMaterial({ color: 0x432BD7, wireframe: true })
+
     );
 
     scene.add(mesh);
 
+    meshFloor = new THREE.Mesh(
+        new THREE.PlaneGeometry(10, 10, 10, 10),
+        new THREE.MeshBasicMaterial({ color: 0xffffff, wireframe: false })
+    );
+    meshFloor.rotation.x -= Math.PI / 2;
+    scene.add(meshFloor);
+
     camera.position.set(0, player.height, -5);
-    camera.lookAt(mesh.position);
+    camera.lookAt(new THREE.Vector3(0, player.height, 0));
 
     renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
@@ -32,10 +41,10 @@ function animate() {
 
 
     if (keyboard[37]) {
-        camera.rotation.y += Math.PI * 0.01;
+        camera.rotation.y -= Math.PI * 0.01;
     }
     if (keyboard[39]) {
-        camera.rotation.y -= Math.PI * 0.01;
+        camera.rotation.y += Math.PI * 0.01;
     }
 
     renderer.render(scene, camera);
