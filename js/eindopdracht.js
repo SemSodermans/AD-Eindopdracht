@@ -29,10 +29,24 @@ function animate() {
     mesh.rotation.x += 0.01;
     mesh.rotation.y += 0.02;
 
+
+    if (keyboard[37]) {
+        camera.rotation.y -= Math.PI * 0.01;
+    }
+    if (keyboard[39]) {
+        camera.rotation.y += Math.PI * 0.01;
+    }
+
     renderer.render(scene, camera);
 }
 
+function keyDown(event) {
+    keyboard[event.keyCode] = true;
+}
 
+function keyUp(event) {
+    keyboard[event.keyCode] = false;
+}
 
 function onWindowResize() {
     camera.aspect = window.innerWidth / window.innerHeight;
@@ -42,5 +56,7 @@ function onWindowResize() {
 }
 
 window.addEventListener('resize', onWindowResize, false);
+window.addEventListener('keydown', keyDown);
+window.addEventListener('keyup', keyUp);
 
 window.onload = init;
