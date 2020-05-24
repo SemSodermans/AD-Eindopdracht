@@ -1,6 +1,7 @@
 var scene, camera, renderer, mesh;
 
 var keyboard = {};
+var player = { height: 1.8 };
 
 function init() {
     scene = new THREE.Scene();
@@ -13,7 +14,7 @@ function init() {
 
     scene.add(mesh);
 
-    camera.position.z = 5;
+    camera.position.set(0, player.height, -5);
     camera.lookAt(mesh.position);
 
     renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -31,10 +32,10 @@ function animate() {
 
 
     if (keyboard[37]) {
-        camera.rotation.y -= Math.PI * 0.01;
+        camera.rotation.y += Math.PI * 0.01;
     }
     if (keyboard[39]) {
-        camera.rotation.y += Math.PI * 0.01;
+        camera.rotation.y -= Math.PI * 0.01;
     }
 
     renderer.render(scene, camera);
