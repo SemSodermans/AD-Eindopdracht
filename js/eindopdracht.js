@@ -9,28 +9,41 @@ function init() {
     camera = new THREE.PerspectiveCamera(90, window.innerWidth / window.innerHeight, 0.1, 1000);
 
     mesh = new THREE.Mesh(
-        new THREE.SphereGeometry(1, 50, 50),
-        new THREE.MeshBasicMaterial({ color: 0x432BD7, wireframe: false })
+        new THREE.CubeGeometry(1, 1, 1),
+        new THREE.MeshPhongMaterial({ color: 0x432BD7, wireframe: false })
 
     );
 
     mesh.position.y += 1;
+    mesh.receiveShadow = true;
+    mesh.castShadow = true;
     scene.add(mesh);
 
     meshFloor = new THREE.Mesh(
         new THREE.PlaneGeometry(20, 10, 10, 10),
-        new THREE.MeshBasicMaterial({ color: 0xFB6D6D, wireframe: false })
+        new THREE.MeshPhongMaterial({ color: 0xFB6D6D, wireframe: false })
     );
     meshFloor.rotation.x -= Math.PI / 2;
+    meshFloor.receiveShadow = true;
     scene.add(meshFloor);
 
+    ambientLight = new THREE.AmbientLight(0xffffff, 0.2);
+    scene.add(ambientLight);
 
+    light = new THREE.PointLight(0xffffff, 1.5, 20);
+    light.position.set(-1, 5, -2);
+    light.castShadow = true;
+    light.shadow.camera.near = 0.1;
+    light.shadow.camera.far = 25;
+    scene.add(light);
 
     camera.position.set(0, player.height, -5);
     camera.lookAt(new THREE.Vector3(0, player.height, 0));
 
     renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.BasicShadowMap;
     document.body.appendChild(renderer.domElement);
 
     animate();
@@ -73,6 +86,7 @@ function animate() {
     if (keyboard[39]) {
         camera.rotation.y += player.turnSpeed;
     }
+
 
     renderer.render(scene, camera);
 }
