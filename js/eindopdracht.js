@@ -1,12 +1,24 @@
+Physijs.scripts.worker = 'js/physijs_worker.js';
+
 var scene, camera, renderer, mesh;
+var clock = new THREE.Clock();
 var meshFloor;
 
 var keyboard = {};
-var player = { height: 3.5, speed: 0.4, turnSpeed: Math.PI * 0.02 };
+var player = { height: 4, speed: 0.4, turnSpeed: Math.PI * 0.02 };
+
 
 function init() {
-    scene = new THREE.Scene();
-    camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    scene = new Physijs.Scene;
+    scene.setGravity(new THREE.Vector3(0, -1, 0));
+    camera = new THREE.PerspectiveCamera(80, window.innerWidth / window.innerHeight, 0.1, 1000);
+
+    renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.BasicShadowMap;
+    document.body.appendChild(renderer.domElement);
+
 
     //Bovenste Cilinder
     mesh = new THREE.Mesh(
@@ -33,6 +45,8 @@ function init() {
     mesh2.receiveShadow = true;
     mesh2.castShadow = true;
     scene.add(mesh2);
+
+
 
     //Backboard
     mesh3 = new THREE.Mesh(
@@ -69,24 +83,79 @@ function init() {
     scene.add(mesh4);
 
 
-    //Basketbal
-    ball = new THREE.Mesh(
-        new THREE.SphereGeometry(0.35, 60, 60),
-        sphereMaterials = [
-            new THREE.MeshPhongMaterial({ map: new THREE.TextureLoader().load('/img/basketball.jpg'), side: THREE.DoubleSide })
-        ]
+    //Basketballen
+    var ballGeometry = new THREE.SphereGeometry(0.35, 60, 60);
+    var ballMaterial = new THREE.MeshPhongMaterial({ map: new THREE.TextureLoader().load('/img/basketball.jpg'), side: THREE.DoubleSide });
+    var ball = new Physijs.SphereMesh(ballGeometry, ballMaterial);
+
+    ball.position.set(6, 2, 4);
+    ball.castShadow = true;
+    scene.add(ball);
+
+    ball2 = ball.clone();
+    ball2.position.set(6.5, 2, 3.5);
+    ball2.castShadow = true;
+    scene.add(ball2);
+
+    ball3 = ball.clone();
+    ball3.position.set(7, 2, 3);
+    ball3.castShadow = true;
+    scene.add(ball3);
+
+    ball4 = ball.clone();
+    ball4.position.set(7.5, 2, 2.5);
+    ball4.castShadow = true;
+    scene.add(ball4);
+
+    ball5 = ball.clone();
+    ball5.position.set(8, 2, 2);
+    ball5.castShadow = true;
+    scene.add(ball5);
+
+    ball6 = ball.clone();
+    ball6.position.set(0, 2, 2);
+    ball6.castShadow = true;
+    scene.add(ball6);
+
+
+
+    //ballenrek
+    mesh5 = new THREE.Mesh(
+        new THREE.CubeGeometry(1, 2, 3.5),
+        new THREE.MeshPhongMaterial({ color: 0xDC143C, wireframe: false })
 
 
     );
 
-    ball.position.z += 4;
-    ball.position.y += 2;
-    ball.castShadow = true;
-    scene.add(ball);
+    mesh5.position.set(7, .65, 3),
+        mesh5.rotation.y = 11.8;
+    mesh5.castShadow = true;
+    scene.add(mesh5);
+
+
+    //skybox
+    mesh6 = new THREE.Mesh(
+        new THREE.CubeGeometry(1000, 1000, 1000),
+        backboardMaterials = [
+            new THREE.MeshPhongMaterial({ map: new THREE.TextureLoader().load('/img/skybox.jpg'), side: THREE.DoubleSide }),
+            new THREE.MeshPhongMaterial({ map: new THREE.TextureLoader().load('/img/skybox.jpg'), side: THREE.DoubleSide }),
+            new THREE.MeshPhongMaterial({ map: new THREE.TextureLoader().load('/img/skybox.jpg'), side: THREE.DoubleSide }),
+            new THREE.MeshPhongMaterial({ map: new THREE.TextureLoader().load('/img/skybox.jpg'), side: THREE.DoubleSide }),
+            new THREE.MeshPhongMaterial({ map: new THREE.TextureLoader().load('/img/skybox.jpg'), side: THREE.DoubleSide }),
+            new THREE.MeshPhongMaterial({ map: new THREE.TextureLoader().load('/img/skybox.jpg'), side: THREE.DoubleSide })
+        ]
+
+    );
+
+    mesh6.position.set(0, 0, 0),
+        mesh6.castShadow = true;
+    scene.add(mesh6);
+
+
 
 
     //Vloer
-    meshFloor = new THREE.Mesh(
+    meshFloor = new Physijs.BoxMesh(
         new THREE.PlaneGeometry(28, 50, 10, 10),
         meshFloorMaterials = [
             new THREE.MeshPhongMaterial({ map: new THREE.TextureLoader().load('/img/court.jpg'), side: THREE.DoubleSide })
@@ -109,19 +178,16 @@ function init() {
     scene.add(light);
 
 
+    camera.position.set(0, player.height, -8);
 
-
-    renderer = new THREE.WebGLRenderer({ antialias: true });
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.shadowMap.enabled = true;
-    renderer.shadowMap.type = THREE.BasicShadowMap;
-    document.body.appendChild(renderer.domElement);
 
     //Camera beweging roteren
     orbitControls = new THREE.OrbitControls(camera, renderer.domElement);
 
+    scene.simulate();
+
     //Bal beweging slepen
-    dragControls = new THREE.DragControls([ball], camera, renderer.domElement);
+    dragControls = new THREE.DragControls([ball, ball2, ball3, ball4, ball5, ball6], camera, renderer.domElement);
     dragControls.addEventListener('dragstart', function (event) {
         event.object.material.opacity = 0.33
         orbitControls.enabled = false
@@ -131,20 +197,26 @@ function init() {
         orbitControls.enabled = true
     });
 
-
-    camera.position.set(0, player.height, 0);
-    camera.rotation.y += 3.15;
-
-
     animate();
+
+
+
+
 }
+
+
+
+
 
 function animate() {
     requestAnimationFrame(animate);
 
-    ball.rotation.x += 0.03;
-    ball.rotation.y += 0.03;
+    //roteren van de middelste bal
+    ball6.rotation.x += 0.02;
+    ball6.rotation.y += 0.02;
 
+
+    //toetsenbord beweging
     if (keyboard[87]) {
         camera.position.x -= Math.sin(camera.rotation.y) * player.speed;
         camera.position.z -= -Math.cos(camera.rotation.y) * player.speed;
@@ -171,6 +243,7 @@ function animate() {
 
 
     renderer.render(scene, camera);
+
 }
 
 function keyDown(event) {
@@ -187,6 +260,7 @@ function onWindowResize() {
     renderer.setSize(window.innerWidth, window.innerHeight);
 
 }
+
 
 
 
